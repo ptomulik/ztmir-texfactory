@@ -12,7 +12,7 @@
 
 \usepackage{bm}
 \usepackage{amsmath,amsfonts}
-\usepackage{mathtools}
+\usepackage{mathtools, nccmath}
 \usepackage[pdftex]{graphicx}
 \usepackage[titletoc,title]{appendix}
 \usepackage{subcaption}
@@ -22,30 +22,36 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,3d,patterns,calc}
 
-\newcommand{\brm}[1]{\bm{\mathrm{#1}}}
-\renewcommand{\arraystretch}{1.2}
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+%%\newcommand{\brm}[1]{\bm{\mathrm{#1}}}
+%%\renewcommand{\arraystretch}{1.2}
+%%\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+%%\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+%%\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+%%
+%%% commath provides \od, but the package is not available on my travis-ci setup
+%%\newcommand{\od}[2]{\frac{\mathrm{d}#1}{\mathrm{d}#2}}
+%%\newcommand{\odn}[3]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
+%%\newcommand{\tod}[2]{\tfrac{\mathrm{d}#1}{\mathrm{d}#2}}
+%%\newcommand{\todn}[3]{\tfrac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
+%%% gensymb provides \degree command, but whole package for just one symbol?
+%%\newcommand{\degree}{^{\circ}}
+%%
+%%\lstset{%
+%%  basicstyle=\footnotesize\ttfamily\selectfont,
+%%  language=Matlab,
+%%  inputencoding=utf8,
+%%  extendedchars=true,
+%%  frame=trBL
+%%}
 
-% commath provides \od, but the package is not available on my travis-ci setup
-\newcommand{\od}[2]{\frac{\mathrm{d}#1}{\mathrm{d}#2}}
-\newcommand{\odn}[3]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
-\newcommand{\tod}[2]{\tfrac{\mathrm{d}#1}{\mathrm{d}#2}}
-\newcommand{\todn}[3]{\tfrac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
-% gensymb provides \degree command, but whole package for just one symbol?
-\newcommand{\degree}{^{\circ}}
+%%\newfloat{lstfloat}{htbp}{lop}
+%%\floatname{lstfloat}{Listing}
 
-\lstset{%
-  basicstyle=\footnotesize\ttfamily\selectfont,
-  language=Matlab,
-  inputencoding=utf8,
-  extendedchars=true,
-  frame=trBL
-}
-
-\newfloat{lstfloat}{htbp}{lop}
-\floatname{lstfloat}{Listing}
+\DeclarePairedDelimiterX{\set}[1]{\{}{\}}{\setargs{#1}}
+\NewDocumentCommand{\setargs}{>{\SplitArgument{1}{;}}m}
+{\setargsaux#1}
+\NewDocumentCommand{\setargsaux}{mm}
+{\IfNoValueTF{#2}{#1} {#1\,\delimsize|\,\mathopen{}#2}}%{#1\:;\:#2}
 
 \setcitestyle{numbers,square,comma}
 
@@ -79,9 +85,14 @@
 Koncepcja pomiaru jest w zasadzie znana od prawie 100 lat. Urządzenia z
 kategorii ,,transfer function analyzer'', czy wzmacniacze typu ,,lock-in
 amplifier'' działają wg podobnej zasady. U podstaw działania tych urządzeń leży
-proces mieszania sygnału badanego $u(t)$ z~sygnałem odniesienia $u_{ref}(t)$.
-Zwykle odbywa się to poprzez mnożenie sygnałów. Szczególnie interesujące dla
-potrzeb niniejszego projektu jest przetwarzanie sygnałów sinusoidalnych.
+proces mieszania sygnału badanego $u(t)$ z~pewnym sygnałem wzorcowym. W~tym
+celu stosuje się nieliniowe elementy elektroniczne, bądź układy scalone
+przeznaczone do przemiany częstotliwości. Jedną z~metod mieszania
+częstotliwości jest mnożenie sygnałów. Szczególnie interesujące dla potrzeb
+niniejszego projektu jest przetwarzanie sygnałów sinusoidalnych.
+
+\subsection{Iloczyn funkcji sinusoidalnych}
+\label{sec:NZPSA}
 
 Pamiętamy, że funkcje trygonometryczne można wyrazić w~postaci wykładniczej
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -166,11 +177,10 @@ otrzymując ciekawy rezultat
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Z~równań \eqref{eq:9LJZO} widzimy, że w~wyniku mnożenia sygnałów
-o~częstotliwościach (pulsacjach) $\Omega$ i $\omega$ powstaje sygnał
-złożony z~dwu harmonicznych o częstotliwościach $\Omega - \omega$ oraz $\Omega
-+ \omega$.
+o~pulsacjach $\Omega$ i $\omega$ powstaje sygnał złożony z~dwu harmonicznych:
+jednej o~pulsacji $\Omega - \omega$, drugiej o pulsacji $\Omega + \omega$.
 
-W~szczególnym przypadku, gdy $\Omega = \omega$, mamy
+W~szczególnym przypadku, gdy $\Omega = \omega$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \label{eq:EE55O}
@@ -191,23 +201,54 @@ W~szczególnym przypadku, gdy $\Omega = \omega$, mamy
   \end{align}
 \end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-a~więc otrzymujemy sygnały ze~składowymi stałymi $\frac{1}{2}\cos\varphi$,
-$\frac{1}{2}\sin\varphi$ niosącymi pełną informację o~przesunięciu fazowym
-(o~składowej rzeczywistej i~urojonej sygnału wyrażonego w~postaci zespolonej).
+otrzymujemy sygnały, których składowe stałe $\frac{1}{2}\cos\varphi$,
+$\frac{1}{2}\sin\varphi$ odzwierciedlają przesunięcie fazowe $\varphi$.
+
+\subsection{Sygnały użyte w~pomiarze transmitancji $G_D$}
+\label{sec:I1HGZ}
 
 W~niniejszym projekcie zakłada się, że do układu badanego doprowadzony jest
 zmienny sygnał napięciowy $u_1(t)$ o~amplitudzie $U_1$, pulsacji $\omega$
 i~przesunięty w~fazie względem sygnału wzorcowego $u_I(t) = \sin{\omega t}$
-o~kąt$\varphi_1$. Badany układ jest liniowy, więc napięcie $u_2$ mierzone na
+o~kąt $\varphi_1$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[%
+      scale = 1.0,%
+      input/.style = {coordinate},%
+      output/.style = {coordinate},%
+      block/.style = {%
+        draw,%
+        fill=white,%
+        rectangle,%
+        minimum height=3em,%
+        minimum width=3em%
+      },%
+      >=latex'%
+    ]
+    \node [input] (IN) {};
+    \node [block, right of=IN, node distance=2cm] (GD) {$G_D$};
+    \node [output, right of=GD, node distance=2cm] (OUT) {};
+    \draw [->] (IN) -- node[anchor=south]{$u_1(t)$} (GD);
+    \draw [->] (GD) -- node[anchor=south]{$u_2(t)$} (OUT);
+  \end{tikzpicture}
+  \caption{Układ badany oraz sygnały}
+  \label{fig:6DR1S}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Badany układ jest liniowy, więc napięcie $u_2$ mierzone na
 jego zaciskach wyjściowych będzie również miało postać przebiegu sinusoidalnego
 o~pewnej amplitudzie $U_2$ i~będzie przesunięty w~fazie względem sygnału
-odniesienia o $\varphi_2$.  Ogólnie zapiszemy to
+wzorcowego o~$\varphi_2$. Ogólnie, zapiszemy to jako
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{align}
   & u_i(t) = U_i \sin{(\omega t + \varphi_i)}
          = P_i \sin{(\omega t)} + Q_i \cos{(\omega t)},
   &
-  & i \in \left\lbrace 1, 2 \right\rbrace, &
+  & i \in \set{1, 2}, &
   \label{eq:MG9JQ}
 \end{align}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -216,15 +257,19 @@ gdzie
 \begin{align}
   & P_i = U_i \cos{\varphi_i} &
   & Q_i = U_i \sin{\varphi_i}, &
-  & i \in \left\lbrace 1, 2 \right\rbrace. &
+  & i \in \set{1, 2}. &
   \label{eq:9UTG8}
 \end{align}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Mieszając sygnały $u_1(t)$ i $u_2(t)$ z~sygnałami wzorcowymi można zmierzyć
-$P_i$, $Q_i$, $i \in \left\lbrace 1, 2 \right\rbrace$. Mnożąc
+\subsection{Metoda pozyskania składowych transmitancji $G_D$}
+\label{sec:TV9TW}
+
+Mieszając sygnały $u_i(t)$, $i \in \set{1, 2}$ z~sygnałami wzorcowymi $u_I(t) =
+\sin{\omega t}$, $u_Q(t) = \cos{\omega t}$ można zmierzyć $P_i = U_i
+\cos{\varphi_i}$, $Q_i = U_i \sin {\varphi_i}$, $i \in \set{1, 2}$. Mnożąc
 mianowicie~\eqref{eq:MG9JQ} przez $\sin{\omega t}$ bądź $\cos{\omega t}$
-otrzymujemy
+otrzymujemy, zgodnie z~\eqref{eq:EE55O},
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
@@ -249,14 +294,111 @@ otrzymujemy
   \label{eq:M1ICA}
 \end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-dla $i \in \left\lbrace 1, 2 \right\rbrace$. Wartości $P_i$, $Q_i$ można
+dla $i \in \set{1, 2}$. Wartości $P_i$, $Q_i$ można
 uzyskać mierząc składową stałą sygnałów wyjściowych z~mieszacza (stosując
 np. odpowiedni filtr dolnoprzepustowy).
 
-Z~naszego punktu widzenia interesująca jest transmitancja badanego układu,
-która w~przypadku układu liniowego objawia się poprzez zmianę amplitudy
-(wzmocnienie $A_D$) i~przesunięcia fazowego $\varphi_D$ sygnału wyjściowego
-$u_2$ w~stosunku do wejściowego $u_1$. Możemy to wyrazić jako
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[%
+      scale = 1.0,%
+      input/.style = {coordinate},%
+      output/.style = {coordinate},%
+      junction/.style = {draw, fill=black, circle, inner sep=1pt},%
+      block/.style = {%
+        draw,%
+        fill=white,%
+        rectangle,%
+        minimum height=3em,%
+        minimum width=3em%
+      },%
+      mul/.style = {%
+        draw,%
+        circle,%
+        fill=white,%
+        path picture={%
+          \draw [black]%
+          (path picture bounding box.135) -- (path picture bounding box.315)%
+          (path picture bounding box.45) -- (path picture bounding box.225);%
+        }%
+      },%
+      filt/.style = {%
+        draw,%
+        fill=white,%
+        rectangle,%
+        minimum height=3em,%
+        minimum width=3em,%
+        path picture={%
+          \draw [black]%
+          ($(path picture bounding box.west) + (1mm,0mm)$)%
+          --%
+          ($(path picture bounding box.east) + (-1mm,0mm)$)%
+          ($(path picture bounding box.west) + (2mm,3mm)$)%
+          --%
+          ($(path picture bounding box.center) + (0mm,3mm)$)%
+          --%
+          ($(path picture bounding box.east) + (-2mm,-3mm)$);%
+        }%
+      },%
+      coord/.style = {coordinate},
+      >=latex'%
+    ]
+    \node [block] (GD) {$G_D$};
+    \node [input, below of=GD, node distance=2.5cm] (IN) {};
+    \node [output, above of=GD, node distance=2.5cm] (OUT) {};
+    \node [junction, below of=GD, node distance=2cm] (JI0) {};
+    \node [junction, above of=GD, node distance=2cm] (JO0) {};
+    \node [junction, right of=JI0, node distance=2cm] (JI1) {};
+    \node [junction, right of=JO0, node distance=2cm] (JO1) {};
+    \node [coord, below of=JI1, node distance=0.75cm] (CI1I) {};
+    \node [coord, above of=JI1, node distance=0.75cm] (CI1Q) {};
+    \node [coord, above of=JO1, node distance=0.75cm] (CO1I) {};
+    \node [coord, below of=JO1, node distance=0.75cm] (CO1Q) {};
+    \node [mul, right of=CI1I, node distance=1cm] (MII) {};
+    \node [mul, right of=CI1Q, node distance=1cm] (MIQ) {};
+    \node [mul, right of=CO1I, node distance=1cm] (MOI) {};
+    \node [mul, right of=CO1Q, node distance=1cm] (MOQ) {};
+    \node [filt, right of=MII, node distance=2cm] (FII) {};
+    \node [filt, right of=MIQ, node distance=2cm] (FIQ) {};
+    \node [filt, right of=MOI, node distance=2cm] (FOI) {};
+    \node [filt, right of=MOQ, node distance=2cm] (FOQ) {};
+    \node [coord, below of=MII, node distance=1cm] (UII) {};
+    \node [coord, above of=MIQ, node distance=1cm] (UIQ) {};
+    \node [coord, above of=MOI, node distance=1cm] (UOI) {};
+    \node [coord, below of=MOQ, node distance=1cm] (UOQ) {};
+    \node [coord, right of=FII, node distance=2cm] (CII) {};
+    \node [coord, right of=FIQ, node distance=2cm] (CIQ) {};
+    \node [coord, right of=FOI, node distance=2cm] (COI) {};
+    \node [coord, right of=FOQ, node distance=2cm] (COQ) {};
+    \draw [->] (IN) -- node[anchor=east]{$u_1(t)$} (GD);
+    \draw [->] (GD) -- node[anchor=east]{$u_2(t)$} (OUT);
+    \draw [->] (JI0) -- (JI1) -| (CI1I) -- (MII);
+    \draw [->] (JI0) -- (JI1) -| (CI1Q) -- (MIQ);
+    \draw [->] (JO0) -- (JO1) -| (CO1I) -- (MOI);
+    \draw [->] (JO0) -- (JO1) -| (CO1Q) -- (MOQ);
+    \draw [->] (UII) -- node [anchor=west]{$u_I(t)$} (MII);
+    \draw [->] (UOI) -- node [anchor=west]{$u_I(t)$} (MOI);
+    \draw [->] (UIQ) -- node [anchor=west]{$u_Q(t)$} (MIQ);
+    \draw [->] (UOQ) -- node [anchor=west]{$u_Q(t)$} (MOQ);
+    \draw [->] (MII) -- (FII);
+    \draw [->] (MIQ) -- (FIQ);
+    \draw [->] (MOI) -- (FOI);
+    \draw [->] (MOQ) -- (FOQ);
+    \draw [->] (FII) -- node [anchor=south]{$\frac{1}{2}P_1$} (CII);
+    \draw [->] (FIQ) -- node [anchor=south]{$\frac{1}{2}Q_1$} (CIQ);
+    \draw [->] (FOI) -- node [anchor=south]{$\frac{1}{2}P_2$} (COI);
+    \draw [->] (FOQ) -- node [anchor=south]{$\frac{1}{2}Q_2$} (COQ);
+  \end{tikzpicture}
+  \caption{Wyznaczanie składowych $P_i$ i $Q_i$ reprezentujących sygnały $u_i$.}
+  \label{fig:UCMH6}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Interesująca nas transmitancja $G_D$ badanego układu (liniowego) objawia się
+poprzez zmianę amplitudy (wzmocnienie $A_D$) i~przesunięcie fazowe
+(o~$\varphi_D$) sygnału wyjściowego $u_2$ w~stosunku do wejściowego $u_1$.
+Możemy to wyrazić jako
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{multline}
   u_2(t) = A_D U_1 \sin{((\omega t + \varphi_1) + \varphi_D)} = A_D U_1 \left[
@@ -277,7 +419,7 @@ $u_2$ w~stosunku do wejściowego $u_1$. Możemy to wyrazić jako
   + \left(P_D \sin{\varphi_1} + Q_D \cos{\varphi_1}\right)\cos{\omega t}
   \right] = \\ =
     \left(P_1 P_D - Q_1 Q_D\right) \sin{\omega t}
-  + \left(Q_1 P_D + P_1 Q_D\right) \cos{\omega t}
+  + \left(Q_1 P_D + P_1 Q_D\right) \cos{\omega t},
   \label{eq:HV0TF}
 \end{multline}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,7 +427,7 @@ gdzie $P_D$ oraz $Q_D$ reprezentują transmitancję $G_D = P_D + j Q_D$ badanego
 układu.
 
 Przez porównanie \eqref{eq:MG9JQ} z~\eqref{eq:HV0TF} otrzymujemy układ równań
-liniowych względem $P_D$ i $Q_D$
+liniowych z~niewiadomymi $P_D$ i $Q_D$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
@@ -345,649 +487,13 @@ będą miały ograniczone amplitudy
     \label{eq:4AA9D}
     \\
     & \left|\frac{P_2}{U_1}\right| \le A_D &
-    & \left|\frac{Q_2}{U_1}\right| \le A_D, &
+    & \left|\frac{Q_2}{U_1}\right| \le A_D. &
     \label{eq:TX2NW}
   \end{align}
 \end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-gdzie $A_D \le 1$ dla układów pasywnych.
 
-%%Przez porównanie
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{multline}
-%%
-%%  \label{eq:CCBE4}
-%%\end{multline}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{figure}[htbp]
-%%  \centering
-%%  \begin{tikzpicture}[%
-%%      scale=1.0,%
-%%      axis/.style={thin,->},%
-%%      zxplane/.style={canvas is zx plane at y=#1},%
-%%      yxplane/.style={canvas is yx plane at z=#1},%
-%%      yzplane/.style={canvas is yz plane at x=#1},%
-%%  ]
-%%    \coordinate (O) at (0,0,0);
-%%
-%%    \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%      \draw[axis] (0.0, 0.0, 0.0) -- (2,0,0) node [left] {$x$};
-%%      \draw[axis] (0.0, 0.0, 0,0) -- (0,2,0) node [right] {$y$};
-%%      \draw[axis] (0.0, 0.0, 0.0) -- (0,0,2) node [right] {$z$};
-%%      \draw[axis,yzplane=1.8] (0,0) ++ (-120:.3) arc(-120:120:.3) node [above] {$\varphi_x$};
-%%      \begin{scope}[rotate around x=10]
-%%        % axis "1" (rotation alpha_x)
-%%        \draw[thick] (-1.05, 0, 0) -- (1.05, 0, 0);
-%%
-%%        % details "1"
-%%        \draw[thick] (-1, 0, 0.1) -- (-0.7, 0, 0.1);
-%%        \draw[thick] (-1, 0,-0.1) -- (-0.7, 0,-0.1);
-%%        \draw[thick] (-1.05, 0,-0.2) -- (-1.05, 0, 0.2);
-%%        \draw[thick] (-0.65, 0,-0.2) -- (-0.65, 0, 0.2);
-%%
-%%        \draw[thick] ( 1, 0, 0.1) -- ( 0.7, 0, 0.1);
-%%        \draw[thick] ( 1, 0,-0.1) -- ( 0.7, 0,-0.1);
-%%        \draw[thick] ( 1.05, 0,-0.2) -- ( 1.05, 0, 0.2);
-%%        \draw[thick] ( 0.65, 0,-0.2) -- ( 0.65, 0, 0.2);
-%%
-%%        \draw[draw=none,fill=black,zxplane=0] ( 0.1,-1) rectangle ( 0.2,-0.7);
-%%        \draw[draw=none,fill=black,zxplane=0] (-0.1,-1) rectangle (-0.2,-0.7);
-%%        \draw[draw=none,fill=black,zxplane=0] ( 0.1, 1) rectangle ( 0.2, 0.7);
-%%        \draw[draw=none,fill=black,zxplane=0] (-0.1, 1) rectangle (-0.2, 0.7);
-%%
-%%        \draw[axis,zxplane=1.8] (0,0) ++ (-120:.3) arc(-120:120:.3) node [midway, above] {$\varphi_y$};
-%%
-%%        \begin{scope}[rotate around y=20]
-%%          % axis "2" (rotation alpha_y)
-%%          \draw[thick](0,-1.05, 0) -- (0, 1.05, 0);
-%%
-%%          % details "2"
-%%          \draw[thick](0,-1,-0.1) -- (0,-0.7,-0.1);
-%%          \draw[thick](0,-1, 0.1) -- (0,-0.7, 0.1);
-%%          \draw[thick](0,-1.05,-0.2) -- (0,-1.05, 0.2);
-%%          \draw[thick](0,-0.65,-0.2) -- (0,-0.65, 0.2);
-%%
-%%          \draw[thick](0, 1,-0.1) -- (0, 0.7,-0.1);
-%%          \draw[thick](0, 1, 0.1) -- (0, 0.7, 0.1);
-%%          \draw[thick](0, 1.05,-0.2) -- (0, 1.05, 0.2);
-%%          \draw[thick](0, 0.65,-0.2) -- (0, 0.65, 0.2);
-%%
-%%          \draw[thick](0,-0.85,-0.1) -- (0,-0.85,-0.3) -- (0,0.85,-0.3) -- (0,0.85,-0.1);
-%%
-%%          \draw[very thick,-*](0, 0, -0.3) -- (0, 0, -6.0) node [right] {$r$};
-%%
-%%          \draw[axis] ( 0.0, 0.0, 0.0) -- (2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] ( 0.0, 0.0, 0,0) -- (0,2,0) node [right] {$y^{\prime}$};
-%%          \draw[axis] ( 0.0, 0.0, 0.0) -- (0,0,2) node [right] {$z^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%  \end{tikzpicture}
-%%  \caption{Schemat kinematyczny wahadła.}
-%%  \label{fig:7YP7N}
-%%\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Na schemacie zaznaczono dwa układy współrzędnych:
-%%\begin{itemize}
-%%  \item nieruchomy układ $x,y,z$ ze środkiem w~centrum przegubu Cardana, osie
-%%        $x$ i~$y$ biegną poziomo, przy czym oś $x$ jest równoległa do ściany
-%%        laboratorium a~oś $y$ jest prostopadła do ściany (grot skierowany
-%%        w~kierunku sali), oś $z$ skierowana jest pionowo w~górę,
-%%  \item ruchomy układ $x^{\prime}, y^{\prime}, z^{\prime}$, ze środkiem w~centrum przegubu
-%%        Cardana, układ jest przytwierdzony do drążka wahadła (ruchoma część)
-%%        tak, że oś $z^{\prime}$ pokrywa się z~linią drążka wahadła, zaś oś $y^{\prime}$
-%%        biegnie wzdłuż osi pary obrotowej krzyżak-drążek.
-%%\end{itemize}
-%%W~położeniu swobodnym (nieodchylonym, $\varphi_x = \varphi_y=0$) układ
-%%ruchomy pokrywa się z~nieruchomym.
-%%
-%%Punkt na końcówce drążka wahadła oznaczono jako $r$. Jednocześnie
-%%$r$ będzie oznaczać długość wahadła ($r = 0.66m$).
-%%
-%%
-%%\section{Układ pomiarowy}
-%%\label{sec:Z2CJY}
-%%
-%%W~osiach $x$ i~$y^{\prime}$ zamocowane są potencjometry umożliwiające pomiar
-%%(pośredni) wychyleń kątowych $\varphi_x$ i~$\varphi_y$ zaznaczonych na
-%%rysunku~\ref{fig:7YP7N}. Zmierzone potencjometrami wartości kątowe będziemy
-%%oznaczali symbolami $\bar{\varphi}_x$, $\bar{\varphi}_y$ Na~końcówce drążka
-%%wahadła zamocowany jest akcelerometr, który umożliwia pomiar (pośredni)
-%%chwilowych przyspieszeń liniowych końcówki wahadła (we wszystkich trzech
-%%osiach, $x^{\prime},y^{\prime},z^{\prime}$). Przyspieszenia wskazywane przez
-%%akcelerometr oznaczymy symbolem $\hat{\brm{a}}^{\prime} = \begin{bmatrix}
-%%\hat{a}_x^{\prime} & \hat{a}_y^{\prime} & \hat{a}_z^{\prime} \end{bmatrix}^T$.
-%%Dedykowany program komputerowy, wraz z~kartą pomiarową, umożliwiają zebranie
-%%pomiarów w~krótkich odstępach czasowych i~zapisanie przebiegów do pliku.
-%%
-%%Wahadło jest też wyposażone w~kątomierze umożliwiające odczyt wizualny wychyleń
-%%kątowych $\varphi_x$ i $\varphi_y$ w~warunkach statycznych. Zakres kątomierzy
-%%$\mp 30^{\circ}$.
-%%
-%%\section{Skalowanie czujników}
-%%\label{eq:NC01F}
-%%
-%%{\em Przed przystąpieniem do skalowania czujników należy włączyć układ
-%%pomiarowy i~uruchomić program komputerowy (program do skalowania czujników)}.
-%%
-%%Dane zebrane z~czujników są dostarczone w~postaci napięć wyrażonych w Voltach.
-%%Przed przy\-stą\-pie\-niem do~obliczeń należy je przeliczyć na wielkości
-%%w~odpowiednich jednostkach -- radianach dla odchyleń kątowych oraz
-%%$\tfrac{m}{s^2}$ dla przyspieszeń. Zakłada się, że czujniki mają
-%%charakterystyki liniowe. Dla określenia charakterystyki danego czujnika
-%%powinno więc wystarczyć znalezienie dwóch jej punktów\footnote{W~rzeczywistości
-%%należałoby jednak zrobić pomiar w~wielu punktach i~zastosować regresję
-%%liniową. W~przypadku akcelerometru, wymaga to zastosowania specjalnego
-%%stanowiska do kalibracji.}.
-%%
-%%\subsection{Skalowanie czujników wychylenia (potencjometry)}
-%%\label{eq:460IS}
-%%
-%%Dla każdego potencjometru należy zmierzyć
-%%napięcie wyjściowe w~położeniach wahadła $-30^{\circ}$, $0^{\circ}$
-%%i~$+30^{\circ}$, oznaczone dalej jako $U_{\bullet}^{-30^{\circ}}$,
-%%$U_{\bullet}^{0^{\circ}}$, $U_{\bullet}^{+30^{\circ}}$ ($\bullet=x$ dla kanału
-%%$\varphi_x$ oraz $y$ dla $\varphi_y$). Odczytane wartości należy zebrać
-%%w~tabeli, np. takiej jak tablica~\ref{tab:KM4WU}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{table}[htbp]
-%%  \caption{Skalowanie czujników położenia (potencjometrów).}
-%%  \label{tab:KM4WU}
-%%  \centering
-%%  \begin{tabular}{|l|c|c|c|}
-%%    \hline
-%%                                  & Kanał $x$ & Kanał $y$ \\ \hline
-%%      $U_{\bullet}^{0^{\circ}}$   &           &           \\ \hline
-%%      $U_{\bullet}^{-30^{\circ}}$ &           &           \\ \hline
-%%      $U_{\bullet}^{+30^{\circ}}$ &           &           \\ \hline
-%%      $C_{\bullet}$               &           &           \\ \hline
-%%  \end{tabular}
-%%\end{table}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%Nachylenia charakterystyk potencjometrów (oś $x$ i~$y^{\prime}$) wyrazimy poprzez
-%%współczynniki
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{align}
-%%  & C_x = \frac{\pi/3}{U_x^{+30^{\circ}} - U_x^{-30^{\circ}}}, &
-%%  & C_y = \frac{\pi/3}{U_y^{+30^{\circ}} - U_y^{-30^{\circ}}}. &
-%%  \label{eq:XIRR2}
-%%\end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Zmierzone wartości wychyleń kątowych wyrażone w~radianach będziemy zatem liczyli jako
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{align}
-%%  &\bar{\varphi}_x = C_x \left(U_x - U_x^{0^{\circ}}\right),&
-%%  &\bar{\varphi}_y = C_y \left(U_y - U_y^{0^{\circ}}\right),&
-%%  \label{eq:547XS}
-%%\end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%gdzie $U_x$ i~$U_y$ są chwilowymi wartościami napięć zmierzonych
-%%na~potencjometrach. Można też próbować używać użyć w~charakterze
-%%$U_{\bullet}^{0^{\circ}}$ wartości średniej $U_{\bullet}^{0^{\circ}} =
-%%\tfrac{1}{2}\left(U_{\bullet}^{-30^{\circ}} + U_{\bullet}^{+30^{\circ}}\right)$
-%%jak również zastosować regresję liniową wg trzech punktów $-30^{\circ},
-%%0^{\circ}, +30^{\circ}$ do wyznaczenia współczynników charakterystyki.
-%%
-%%\subsection{Skalowanie akcelerometru}
-%%\label{sec:DHEMO}
-%%
-%%Skalowanie akcelerometru można przeprowadzić na kilka sposobów. Dwa z~nich
-%%przedstawiono w~podrozdziałach \ref{sec:CT4YN} i~\ref{sec:BDRBE}. W~pierwszej
-%%metodzie odpowiednie czynności wykonuje się poza wahadłem. Wymontowany
-%%akcelerometr ustawia się w~położeniach~$\mp 1g$, tzn.  ustawia się kolejne jego
-%%osie pionowo raz w~dół raz w~górę mierząc odpowiadające tym położeniom wartości
-%%napięć generowanych przez akcelerometr.  W~drugiej metodzie akcelerometr jest
-%%zamontowany na końcówce wahadła. Odczytuje się wartości wskazywane przez
-%%akcelerometr w~dwóch różnych położeniach wahadła (w~bezruchu). Skalowanie można
-%%przeprowadzić przed właściwym eksperymentem, jak również można wykonać
-%%,,post-factum'' na podstawie pomiarów z~eksperymentu, przy spełnieniu
-%%odpowiednich warunków.
-%%
-%%\subsubsection{Skalowanie metodą $\mp 1g$}
-%%\label{sec:CT4YN}
-%%
-%%W~celu wyskalowania akcelerometru należy go zdemontować z~końcówki wahadła.
-%%Swobodnym, aczkolwiek podłączonym do~układu pomiarowego akcelerometrem
-%%obracamy ,,w~powietrzu'' starając się ustawić go w~położeniach przedstawionych
-%%na rysunku~\ref{fig:ZDELS}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{figure}[htbp]
-%%  \centering
-%%  \begin{tikzpicture}[%
-%%      scale=1.0,%
-%%      axis/.style={thin,->},%
-%%      zxplane/.style={canvas is zx plane at y=#1},%
-%%      yxplane/.style={canvas is yx plane at z=#1},%
-%%      yzplane/.style={canvas is yz plane at x=#1},%
-%%  ]
-%%    % gravity
-%%    \draw[very thick,->] (-2.8,-2) -- + (0, -1) node [left] {$\brm{g}$};
-%%    \draw[very thick,->] (-2.6,-2) -- + (0, -1);
-%%    \draw[very thick,->] (-2.4,-2) -- + (0, -1);
-%%
-%%    \node[draw=none] at (0,1.75) {$V_x^{0g}, V_y^{0g}, V_z^{+1g}$};
-%%
-%%    \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%      \draw[very thick,fill=gray,yxplane=0] (-1,-1) rectangle (1,1);
-%%      \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%      \draw[axis] (0,0,0) -- +(0,2,0) node [above] {$y^{\prime}$};
-%%      \draw[axis] (0,0,0) -- +(0,0,1) node [right] {$z^{\prime}$};
-%%    \end{scope}
-%%
-%%    \begin{scope}[shift={(5,0)}]
-%%      \node[draw=none] at (0,1.75) {$V_x^{-1g}, V_y^{0g}, V_z^{0g}$};
-%%      \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%        \begin{scope}[rotate around y=90]
-%%          \draw[very thick,fill=gray,yxplane=0] (-1,-1) rectangle (1,1);
-%%          \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,2,0) node [above] {$y^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,0,1) node [above] {$z^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%
-%%    \begin{scope}[shift={(10,0)}]
-%%      \node[draw=none] at (1.25,1.75) {$V_x^{+1g}, V_y^{0g}, V_z^{0g}$};
-%%      \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%        \begin{scope}[rotate around y=-90]
-%%          \draw[very thick,fill=gray,yxplane=0] (-1,-1) rectangle (1,1);
-%%          \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,2,0) node [above] {$y^{\prime}$};
-%%          \draw[axis,dashed] (0,0,0) -- +(0,0,1) node [above] {$z^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%
-%%    \begin{scope}[shift={(0,-5)}]
-%%      \node[draw=none] at (-0.75,1.5) {$V_x^{0g}, V_y^{-1g}, V_z^{0g}$};
-%%      \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%        \begin{scope}[rotate around x=-90]
-%%          \draw[very thick,fill=gray,yxplane=0] (-1,-1) rectangle (1,1);
-%%          \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,2,0) node [right] {$y^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,0,2) node [above] {$z^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%
-%%    \begin{scope}[shift={(5,-5)}]
-%%      \node[draw=none] at (-1.25,1.5) {$V_x^{0g}, V_y^{+1g}, V_z^{0g}$};
-%%      \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%        \begin{scope}[rotate around x=90]
-%%          \draw[axis] (0,0,0) -- +(0,0,2) node [above] {$z^{\prime}$};
-%%          \draw[very thick,fill=gray,yxplane=0] (-1,-1) rectangle (1,1);
-%%          \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,2,0) node [right] {$y^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%
-%%    \begin{scope}[shift={(10,-5)}]
-%%      \node[draw=none] at (-0.5,1.5) {$V_x^{0g}, V_y^{0g}, V_z^{-1g}$};
-%%      \begin{scope}[x={(-135:1cm)}, y={( 0:1cm)}, z={(90:1cm)}]
-%%        \begin{scope}[rotate around y=180]
-%%          \draw[axis] (0,0,0) -- +(0,0,2) node [right] {$z^{\prime}$};
-%%          \draw[very thick, fill=gray, yxplane=0] (-1,-1) rectangle (1,1);
-%%          \draw[axis] (0,0,0) -- +(2,0,0) node [left] {$x^{\prime}$};
-%%          \draw[axis] (0,0,0) -- +(0,2,0) node [right] {$y^{\prime}$};
-%%        \end{scope}
-%%      \end{scope}
-%%    \end{scope}
-%%
-%%  \end{tikzpicture}
-%%  \caption{Pozycjonowanie akcelerometru przy skalowaniu.}
-%%  \label{fig:ZDELS}
-%%\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Podczas pozycjonowania należy zebrać wartości napięć $V_x$, $V_y$ i~$V_z$
-%%zmierzone w~przedstawionych na rysunku~\ref{fig:ZDELS} położeniach
-%%ekstremalnych. Zebrane wartości można zestawić w~tabeli, np. takiej jak
-%%tablica~\ref{tab:Q31HW}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{table}[htbp]
-%%  \centering
-%%  \caption{Tabela pomiarowa do skalowania akcelerometru}
-%%  \label{tab:Q31HW}
-%%  \begin{tabular}{|l|c|c|c|c|}
-%%    \hline
-%%                        & Kanał $x$ & Kanał $y$ & Kanał $z$ \\ \hline
-%%    $V_{\bullet}^{0g}$  &           &           &           \\ \hline
-%%    $V_{\bullet}^{-1g}$ &           &           &           \\ \hline
-%%    $V_{\bullet}^{+1g}$ &           &           &           \\ \hline
-%%    $D_{\bullet}$       &           &           &           \\ \hline
-%%  \end{tabular}
-%%\end{table}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%Nachylenia charakterystyk akcelerometru w~poszczególnych kanałach (oś $x^{\prime}$,
-%%$y^{\prime}$ i~$z^{\prime}$) wyrazimy poprzez współczynniki
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{align}
-%%  & D_x = \frac{2 g}{V_x^{+1g} - V_x^{-1g}}, &
-%%  & D_y = \frac{2 g}{V_y^{+1g} - V_y^{-1g}}, &
-%%  & D_z = \frac{2 g}{V_y^{+1g} - V_y^{-1g}}. &
-%%  \label{eq:TUSWM}
-%%\end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Wartości zmierzonych przyspieszeń wyrażone w~$\tfrac{m}{s^2}$ będziemy zatem
-%%liczyli jako
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{align}
-%%  &{\hat{a}_x}^{\prime}= D_x \left(V_x - V_x^{0g}\right),&
-%%  &{\hat{a}_y}^{\prime}= D_y \left(V_y - V_y^{0g}\right),&
-%%  &{\hat{a}_z}^{\prime}= D_z \left(V_z - V_z^{0g}\right),&
-%%  \label{eq:HM7PF}
-%%\end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%gdzie $V_x$, $V_y$ i~$V_z$ są chwilowymi wartościami napięć zmierzonych
-%%w~kanałach $x$,$y$,$z$ akcelerometru.
-%%
-%%\subsubsection{Skalowanie wg dwóch różnych położeń wahadła}
-%%\label{sec:BDRBE}
-%%
-%%W~metodzie tej akcelerometr jest zamontowany na końcówce wahadła tak jak
-%%podczas właściwego eksperymentu. Rejestrujemy wskazania akcelerometru
-%%oraz wartości wychyleń kątowych $\bar{\varphi}_x$, $\bar{\varphi}_y$ w~dwóch
-%%położeniach wahadła -- $A$ i $B$ (za każdym razem wahadło powinno być
-%%nieruchome w~danym położeniu). Ważne jest, aby $\bar{\varphi}_{\bullet}^A$
-%%różniło się istotnie od $\bar{\varphi}_{\bullet}^B$ zarówno dla kanału $x$ jak
-%%i~$y$.
-%%
-%%Dane z~obu pomiarów możemy zanotować w~tabeli, np.~takiej jak
-%%Tablica~\ref{tab:22DGI}. Wartości kątowe $\bar{\varphi}_x$, $\bar{\varphi}_y$
-%%mogą pochodzić z~kątomierza (jeśli kalibrację robi się niezależnie od
-%%eksperymentu właściwego), bądź mogą być wyznaczone z~napięć $U_x$, $U_y$
-%%(zmierzonych specjalnie w~celu kalibracji, bądź pochodzących z~właściwego
-%%eksperymentu). W~przypadku użycia $U_x$, $U_y$ trzeba zadbać przed obliczeniem
-%%$\bar{\varphi}_x$, $\bar{\varphi}_y$, aby potencjometry były prawidłowo
-%%wyskalowane.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{table}[htbp]
-%%  \caption{Skalowanie akcelerometru wg dwóch różnych położeń wahadła}
-%%  \label{tab:22DGI}
-%%  \begin{tabular}{c|c|c|c|c|c|c|c|}
-%%    \cline{2-8}
-%%    & \multicolumn{3}{|c|}{$V_{\bullet}$}
-%%    & \multicolumn{2}{|c|}{$U_{\bullet}$}
-%%    & \multicolumn{2}{|c|}{$\bar{\varphi}_{\bullet}$}
-%%    \\
-%%    \cline{2-8}
-%%    & Kanał $V_{x}$ & Kanał $V_{y}$ & Kanał $V_{z}$
-%%    & Kanał $U_{x}$ & Kanał $U_{y}$
-%%    & Kanał $\bar{\varphi}_{x}$ & Kanał $\bar{\varphi}_{y}$
-%%    \\
-%%    \hline
-%%    \multicolumn{1}{|c|}{A} & & & & & & & \\ \hline
-%%    \multicolumn{1}{|c|}{B} & & & & & & & \\ \hline
-%%    \multicolumn{1}{|c|}{$V_{\bullet}^{0g}$}  & & & & \multicolumn{4}{|c}{} \\ \cline{1-4}
-%%    \multicolumn{1}{|c|}{$D_{\bullet}$}  & & & & \multicolumn{4}{|c}{} \\ \cline{1-4}
-%%  \end{tabular}
-%%\end{table}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%Nieznane współczynniki skali $D_{\bullet}$, $V_{\bullet}^{0g}$ wyznacza się
-%%poprzez zapisanie równań \eqref{eq:EUIQU} dla~$\brm{a}^{\prime} = \brm{0}$
-%%w~punktach $A$ i~$B$ i~rozwiązanie tak powstałego układu równań. W~efekcie
-%%otrzymujemy
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{subequations}
-%%  \label{eq:GN30K}
-%%  \begin{align}
-%%    & D_x = -g \frac{ \cos{\bar{\varphi}_x^A}\sin{\bar{\varphi}_y^A} -\cos{\bar{\varphi}_x^B}\sin{\bar{\varphi}_y^B} }
-%%                    { V_x^A - V_x^B }, &
-%%    & V_x^{0g} = V_x^A +\frac{g}{D_x} \cos{\bar{\varphi}_x^A}\sin{\bar{\varphi}_y^A}, &
-%%    \label{eq:L8MQV}
-%%    \\
-%%    & D_y = g \frac{ \sin{\bar{\varphi}_x^A} - \sin{\bar{\varphi}_x^B} }
-%%                   { V_y^A - V_y^B }, &
-%%    & V_y^{0g} = V_y^A - \frac{g}{D_y}\sin{\bar{\varphi}_x^A}, &
-%%    \label{eq:OAGGF}
-%%    \\
-%%    & D_z = g \frac{ \cos{\bar{\varphi}_x^A}\cos{\bar{\varphi}_y^A} -\cos{\bar{\varphi}_x^B}\cos{\bar{\varphi}_y^B} }
-%%                    { V_z^A - V_z^B }, &
-%%    & V_z^{0g} = V_z^A - \frac{g}{D_z} \cos{\bar{\varphi}_x^A}\cos{\bar{\varphi}_y^A}, &
-%%    \label{eq:JZ38T}
-%%  \end{align}
-%%\end{subequations}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Tak wyznaczone współczynniki mogą być użyte do przeliczania wartości
-%%napięciowych z~akcelerometru na~przyspieszenia $\hat{\brm{a}}^{\prime}$
-%%wg wzoru \eqref{eq:HM7PF}.
-%%
-%%\section{Pomiar}
-%%\label{sec:CKUHT}
-%%
-%%Do przeprowadzenia pomiaru potrzebne są dwie osoby -- jedna przy komputerze,
-%%druga przy wahadle.
-%%\begin{itemize}
-%%  \item Wahadło ustawić {\em nieruchomo} w~wybranym położeniu początkowym.
-%%  \item Uruchomić pomiar na komputerze.
-%%  \item Po około sekundzie wprawić wahadło w~ruch.
-%%  \item Po upływie $32\dots33$ sekund rozpocząć wyhamowywanie wahadła (jeśli się porusza).
-%%  \item Przed $34$ sekundą wahadło powinno być już nieruchome.
-%%  \item Po upływie $36$-tej sekundy zakończyć rejestrację pomiarów.
-%%\end{itemize}
-%%Wynik zapisany przez program pomiarowy w~postaci arkusza Excel będzie zawierał
-%%5 kolumn
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item \textbf{Untitled}, \textbf{Untitled 1}, \textbf{Untitled 2}: $V_x$, $V_y$, $V_z$,
-%%  \item \textbf{Untitled 3}, \textbf{Untitled 4}: $U_x$, $U_y$.
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%
-%%\section{Obliczenia}
-%%\label{sec:ZCIBX}
-%%
-%%Podczas pomiaru z~czujników zbierane są wartości napięć $U_{x,k}$, $U_{y,k}$
-%%(potencjometry), oraz $V_{x,k}$, $V_{y,k}$, $V_{z,k}$ (akcelerometr)
-%%w~dyskretnych chwilach czasowych $t_k$, gdzie $k$ jest numerem próbki: $k = 0,
-%%1, \dots, K$. Zapisane w~pliku wynikowym liczby są wyrażone w~Voltach.
-%%
-%%\subsection{Konwersja zmierzonych wartości}
-%%\label{sec:O9JWA}
-%%
-%%W~pierwszej kolejności należy dokonać konwersji wartości uzyskanych z~układu
-%%pomiarowego (wyrażonych w Voltach) do postaci liczb wyrażonych w~jednostkach
-%%docelowych (radiany, $\tfrac{m}{s^2}$):
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item z~napięć $U_{\bullet,k}$, wyznaczyć
-%%        wychylenia kątowe $\bar{\varphi}_{\bullet,k}$ (w~radianach) stosując
-%%        wzory~\eqref{eq:547XS}, $\bullet \in \left\{x,y\right\}$,
-%%  \item z~napięć $V_{\bullet,k}$ wyznaczyć przyspieszenia
-%%        ,,brutto'' ${\hat{a}_{\bullet,k}}^{\prime}$ (w~$\tfrac{m}{s^2}$)
-%%        stosując wzory \eqref{eq:HM7PF}, $\bullet \in \left\{x,y,z\right\}$,
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%dla $k=0,1,\dots,K$.
-%%
-%%\subsection{Całkowanie numeryczne przyspieszeń}
-%%\label{sec:OKCY5}
-%%
-%%Przebiegi ${\hat{a}_{x,k}}^{\prime}$, ${\hat{a}_{y,k}}^{\prime}$ zmierzonych
-%%przyspieszeń mogą być użyte do wyznaczenia przybliżonych przebiegów wychylenia
-%%kątowego $\widetilde{\varphi}_{x,k}$, $\widetilde{\varphi}_{y,k}$ wahadła.
-%%W~tym celu należy zastosować procedurę całkującą do rozwiązania odpowiednio
-%%postawionego zagadnienia początkowego dla równań różniczkowych~\eqref{eq:ROGUO}.
-%%
-%%\paragraph{Implementacja procedury całkującej.}
-%%Aby móc stosować procedury numerycznego całkowania, równania \eqref{eq:ROGUO}
-%%należy przekształcić do postaci równoważnego układu równań pierwszego rzędu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{equation}
-%%  \dot{\brm{y}}\left(t\right) = \brm{f}\left(t,\brm{y}\left(t\right)\right),
-%%  \label{eq:DOHJE}
-%%\end{equation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%jak to zaproponowano w~dodatku~\ref{sec:WKKBB}. Prawą stronę $\brm{f}$
-%%takiego równoważnego układu równań (zob.~\eqref{eq:S8LTL}) zapiszemy w~wersji
-%%dyskretnej następująco
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{equation}
-%%  \brm{f}_k \coloneqq \brm{f}\left(t_k, \brm{y}_k\right) = \begin{bmatrix}
-%%    y_{3,k} \\
-%%    y_{4,k} \\
-%%    r^{-1} \left( {\hat{a}_{y,k}}^{\prime} - g \sin{y_{1,k}} \right)  \\
-%%    r^{-1} \left(-{\hat{a}_{x,k}}^{\prime} - g \cos{y_{1,k}}\sin{y_{2,k}} \right)
-%%  \end{bmatrix},
-%%  \label{eq:ETMGP}
-%%\end{equation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%gdzie
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{equation}
-%%  \brm{y}_k = \begin{bmatrix}
-%%    y_{1,k} & y_{2,k} & y_{3,k} & y_{4,k}
-%%  \end{bmatrix}^T \coloneqq \begin{bmatrix}
-%%    \widetilde{\varphi}_{x,k} &
-%%    \widetilde{\varphi}_{y,k} &
-%%    \dot{\widetilde{\varphi}}_{x,k} &
-%%    \dot{\widetilde{\varphi}}_{y,k}
-%%  \end{bmatrix}^T
-%%  \label{eq:VF0ZM}
-%%\end{equation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%jest wektorem algebraicznym niewiadomych zapisanych w~dyskretnej chwili
-%%czasowej $t_k$. Symboli zdefiniowanych wzorami~\eqref{eq:ETMGP}
-%%i~\eqref{eq:VF0ZM} możemy użyć wprost do zaimplementowania dowolnego
-%%(stało-krokowego) schematu całkowania, np. schematu jawnego Eulera (zobacz
-%%dodatek~\ref{sec:VNLHT}). W~ten sposób można dość łatwo zaimplementować metodę
-%%całkującą, np. w~arkuszu kalkulacyjnym Excel.
-%%
-%%\paragraph{Warunki początkowe.}
-%%Jako warunków początkowych w~procesie całkowania można użyć
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{equation}
-%%  \brm{y}_0 = \begin{bmatrix}
-%%    \bar{\varphi}_{x,0} & \bar{\varphi}_{y,0} & 0 & 0
-%%  \end{bmatrix}^T,
-%%\end{equation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%gdzie $\bar{\varphi}_{x,0}$, $\bar{\varphi}_{y,0}$ są odchyleniami kątowymi
-%%odczytanymi z~potencjometrów w~chwili czasowej $t_0$, a~zera w~miejscu
-%%$y_{3,0}$ i~$y_{4,0}$ wynikają ze~sposobu przeprowadzenia eksperymentu
-%%(w~chwili początkowej wahadło miało zerową prędkość). Jeśli w~chwili
-%%początkowej wahadło poruszało się z~niezerową prędkością, prędkość początkową
-%%można spróbować aproksymować wzorami różnicowymi na podstawie kilku
-%%początkowych próbek $\bar{\varphi}_{\bullet,k}$.
-%%
-%%\subsection{Opis szablonu arkusza kalkulacyjnego do obliczeń}
-%%\label{sec:CS7OJ}
-%%
-%%Aby ułatwić przygotowanie sprawozdania, udostępnia się studentom szablon
-%%arkusza kalkulacyjnego do uzupełnienia. Arkusz kalkulacyjny
-%%\texttt{wahadlo-clean.xlsx} zawiera następujące zakładki
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item \texttt{PAR} -- parametry eksperymentu,
-%%  \item \texttt{POM} -- miejsce na wstawienie zebranych danych pomiarowych,
-%%  \item \texttt{EULF} -- arkusz do całkowania numerycznego metodą jawną Eulera,
-%%  \item \texttt{EULB} -- arkusz do całkowania numerycznego metodą niejawną Eulera.
-%%  \item \texttt{TRAP} -- arkusz do całkowania numerycznego metodą trapezów.
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%Arkusz \texttt{POM} jest przygotowany na przyjęcie $3500$ próbek pomiarowych,
-%%co przy okresie próbkowania $10$~ms daje $35$~sekund. Uzupełnianie arkusza,
-%%krok po kroku, wyjaśniono poniżej.
-%%
-%%\paragraph{Uwagi ogólne dotyczące uzupełniania arkusza.} Treść należy
-%%,,wklejać specjalnie'' (\texttt{Ctl+Shift+V}), tak aby nie nadpisać
-%%skonfigurowanego odpowiednio formatowania komórek (format liczb, wyświetlanie
-%%jednostek miar itp.). Komórki z~szarym tłem nie wymagają uzupełniania, zwykle
-%%są tam z~góry znane parametry bądź formuły. Komórki bez tła (defaultowo białe)
-%%wymagają wpisania bądź wklejenia wartości (liczbowych). Komórki w~kolorze
-%%żółtym wymagają wpisania odpowiednich formuł.
-%%
-%%\paragraph{Zakładka \texttt{PAR}.} Zakładkę z~parametrami eksperymentu
-%%uzupełnia się następująco
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item W~tabeli \texttt{PAR-POT} należy wpisać napięcia zebrane podczas
-%%    skalowania potencjometrów. Opcjonalnie, można też poprawić figurujące tam
-%%    zakresy kątów na kątomierzu ($-\#^{\circ}$, $+\#^{\circ}$), jeśli
-%%    skalowania dokonano w~innym zakresie kątów.
-%%  \item Do~tabeli \texttt{PAR-ACC-1G} wpisać napięcia zmierzone przy
-%%    skalowaniu akcelerometru metodą $\mp 1g$.
-%%  \item Do~tabeli \texttt{PAR-ACC-AB} wpisać napięcia zmierzone przy skalowaniu
-%%    akcelerometru wg~dwóch różnych położeń wahadła
-%%    (podrozdział~\ref{sec:BDRBE}). Jeśli wychylenie wahadła przy skalowaniu
-%%    akcelerometru zmierzono kątomierzami, w~szarych polach należy podać
-%%    zmierzone kąty. W~innym przypadku wpisać wartości napięć na potencjometrach
-%%    w~odpowiednie komórki tabeli.
-%%  \item Do~tabeli \texttt{PAR-ACC} wkleić wyliczone współczynniki skali
-%%    akcelerometru bądź to z~\texttt{PAR-ACC-1G}, bądź z~\texttt{PAR-ACC-AB},
-%%    w~zależności od tego, który zestaw współczynników ma być użyty przy
-%%    wyznaczaniu przyspieszeń w~arkuszu \texttt{POM}.
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%\paragraph{Zakładka \texttt{POM}.} Zakładkę z~pomiarami uzupełnia się
-%%następująco
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item z~pliku źródłowego przygotować zakres danych obejmujący $3500$ próbek,
-%%  \item wkleić odpowiednie serie przygotowanych danych w~puste pola kolumn
-%%    \texttt{Vx}, \texttt{Vy}, \texttt{Vz}, \texttt{Ux}, \texttt{Uz}.
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%W~zakładce \texttt{POM} automatycznie wyliczane są przyspieszenia
-%%$\hat{\brm{a}}^{\prime}$ (przyspieszenia ,,brutto'' mierzone akcelerometrem),
-%%wychylenia kątowe $\bar{\varphi}_x$, $\bar{\varphi}_x$ mierzone potencjometrami
-%%oraz moduł $\left|\hat{\brm{a}}^{\prime}\right|$ mierzonego przyspieszenia
-%%(do celów diagnostycznych).
-%%
-%%\paragraph{Zakładki \texttt{EULF}, \texttt{EULB} i~\texttt{TRAP}.} Zakładki
-%%służą do całkowania przyspieszeń. W~żółtych komórkach kolumn \texttt{f1}, ...,
-%%\texttt{f4} oraz \texttt{y1}, ..., \texttt{y4} należy zaimplementować
-%%odpowiednią metodę całkowania. Kolumny \texttt{y1}, ..., \texttt{y4}
-%%przewidziane są dla kolejnych współrzędnych wektora niewiadomych $\brm{y}$, zaś
-%%\texttt{f1}, ..., \texttt{f4} powinny zawierać kolejne składowe funkcji
-%%$\brm{f}$ (patrz rozdział~\ref{sec:OKCY5}).
-%%
-%%\section{Przygotowanie sprawozdania}
-%%\label{sec:GO0AP}
-%%
-%%Przygotowane sprawozdanie powinno zawierać
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\begin{itemize}
-%%  \item krótkie wprowadzenie do prezentowanego eksperymentu (nie dłuższe niż
-%%    pół strony),
-%%  \item uzupełnioną tabelę uzyskaną przy skalowaniu potencjometrów
-%%    (Tablica~\ref{tab:KM4WU}, podrozdział~\ref{eq:460IS}) oraz tabele
-%%    ze~skalowania akcelerometru metodą $\mp 1g$ (Tablica~\ref{tab:Q31HW},
-%%    podrozdział~\ref{sec:CT4YN}) i~metodą wg~dwóch różnych położeń wahadła
-%%    (Tablica~\ref{tab:22DGI}, podrozdział \ref{sec:BDRBE}),
-%%  \item przebiegi $\tilde{\varphi}_x$, $\tilde{\varphi}_y$ wynikające
-%%    z~całkowania przyspieszeń akcelerometru metodami (cały eksperyment, oraz
-%%    pierwsze $15$ sekund)
-%%    \begin{itemize}
-%%      \item jawna metoda Eulera,
-%%      \item niejawna metoda Eulera,
-%%      \item metoda trapezów,
-%%    \end{itemize}
-%%    w~wariantach
-%%    \begin{itemize}
-%%      \item akcelerometry wyskalowane metodą $\pm 1g$,
-%%      \item akcelerometry wyskalowane metodą wg~dwu położeń wahadła;
-%%    \end{itemize}
-%%    przebiegi mają być przedstawione w~postaci wykresów (na osi poziomej czas
-%%    $t$, na osi pionowej wychylenie kątowe); na każdym wykresie powinien być
-%%    również naniesiony (dla porównania) odpowiedni przebieg
-%%    $\bar{\varphi}_{\bullet}$ uzyskany z~pomiarów czujnikiem położenia
-%%    (potencjometrem),
-%%  \item wnioski; należy zwrócić uwagę jakie czynniki wpływają istotnie na
-%%    uzyskane wyniki całkowania oraz czy ta metoda nadaje się do estymacji
-%%    położeń na długich przedziałach czasowych.
-%%\end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%%
 %%\begin{appendices}
 %%\section{Kinematyka wahadła z~przegubem Cardana}
 %%\label{sec:4XR18}
@@ -1575,10 +1081,5 @@ gdzie $A_D \le 1$ dla układów pasywnych.
 %%\label{??:6SYZY}
 %%\label{??:1RMRC}
 %%\label{??:LKWY0}
-%%\label{??:UCMH6}
-%%\label{??:TV9TW}
-%%\label{??:6DR1S}
-%%\label{??:I1HGZ}
-%%\label{??:NZPSA}
 
 % vim: set syntax=tex tabstop=2 shiftwidth=2 expandtab spell spelllang=pl:

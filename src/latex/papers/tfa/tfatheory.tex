@@ -62,7 +62,9 @@
   Niniejszy dokument przedstawia rozważania teoretyczne, mające pomóc autorowi
   w~zaprojektowaniu niskobudżetowego analizatora transmitancji. Urządzenie to
   ma umożliwić pomiar transmitancji liniowych układów elektronicznych, głównie
-  filtrów RLC.
+  filtrów RLC. Jako że autor nie posiada właściwej edukacji w~dziedzinie
+  elektroniki, rozważania poniższe stanowią swojego rodzaju notatki sporządzone
+  w~trakcie samo-edukacji.
 \end{abstract}
 
 \section{Wprowadzenie}
@@ -76,12 +78,10 @@
 
 Koncepcja pomiaru jest w zasadzie znana od prawie 100 lat. Urządzenia z
 kategorii ,,transfer function analyzer'', czy wzmacniacze typu ,,lock-in
-amplifier'' działają wg podobnej zasady.
-
-U podstaw działania tych urządzeń leży proces demodulacji sygnału badanego
-$u(t)$ poprzez mnożenie go przez pewien wygnał odniesienia $u_{ref}(t)$.
-Szczególnie interesujące dla potrzeb niniejszego projektu jest przetwarzanie
-sygnałów sinusoidalnych.
+amplifier'' działają wg podobnej zasady. U podstaw działania tych urządzeń leży
+proces mieszania sygnału badanego $u(t)$ z~sygnałem odniesienia $u_{ref}(t)$.
+Zwykle odbywa się to poprzez mnożenie sygnałów. Szczególnie interesujące dla
+potrzeb niniejszego projektu jest przetwarzanie sygnałów sinusoidalnych.
 
 Pamiętamy, że funkcje trygonometryczne można wyrazić w~postaci wykładniczej
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -93,8 +93,8 @@ Pamiętamy, że funkcje trygonometryczne można wyrazić w~postaci wykładniczej
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Funkcję sinusoidalną $\sin \left(\Omega t + \varphi\right)$ możemy wymnożyć
-przez funkcje wzorcowe $\sin \omega t$ oraz $\cos \omega t$ otrzymując ciekawy
-rezultat
+przez funkcje wzorcowe $u_I(t) = \sin \omega t$ oraz $u_Q(t) = \cos \omega t$
+otrzymując ciekawy rezultat
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \label{eq:9LJZO}
@@ -167,8 +167,8 @@ rezultat
 
 Z~równań \eqref{eq:9LJZO} widzimy, że w~wyniku mnożenia sygnałów
 o~częstotliwościach (pulsacjach) $\Omega$ i $\omega$ powstaje sygnał
-zawierający składowe o częstotliwościach $\Omega - \omega$ oraz $\Omega +
-\omega$.
+złożony z~dwu harmonicznych o częstotliwościach $\Omega - \omega$ oraz $\Omega
++ \omega$.
 
 W~szczególnym przypadku, gdy $\Omega = \omega$, mamy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,7 +185,7 @@ W~szczególnym przypadku, gdy $\Omega = \omega$, mamy
     &
     \sin \left(\omega t + \varphi\right) \cos \omega t
     =
-    \frac{1}{2} \sin{\varphi} + \frac{1}{2} \sin{(2 \omega t + \varphi)}.
+    \frac{1}{2} \sin{\varphi} + \frac{1}{2} \sin{(2 \omega t + \varphi)},
     &
     \label{eq:2ENFD}
   \end{align}
@@ -194,6 +194,171 @@ W~szczególnym przypadku, gdy $\Omega = \omega$, mamy
 a~więc otrzymujemy sygnały ze~składowymi stałymi $\frac{1}{2}\cos\varphi$,
 $\frac{1}{2}\sin\varphi$ niosącymi pełną informację o~przesunięciu fazowym
 (o~składowej rzeczywistej i~urojonej sygnału wyrażonego w~postaci zespolonej).
+
+W~niniejszym projekcie zakłada się, że do układu badanego doprowadzony jest
+zmienny sygnał napięciowy $u_1(t)$ o~amplitudzie $U_1$, pulsacji $\omega$
+i~przesunięty w~fazie względem sygnału wzorcowego $u_I(t) = \sin{\omega t}$
+o~kąt$\varphi_1$. Badany układ jest liniowy, więc napięcie $u_2$ mierzone na
+jego zaciskach wyjściowych będzie również miało postać przebiegu sinusoidalnego
+o~pewnej amplitudzie $U_2$ i~będzie przesunięty w~fazie względem sygnału
+odniesienia o $\varphi_2$.  Ogólnie zapiszemy to
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  & u_i(t) = U_i \sin{(\omega t + \varphi_i)}
+         = P_i \sin{(\omega t)} + Q_i \cos{(\omega t)},
+  &
+  & i \in \left\lbrace 1, 2 \right\rbrace, &
+  \label{eq:MG9JQ}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gdzie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  & P_i = U_i \cos{\varphi_i} &
+  & Q_i = U_i \sin{\varphi_i}, &
+  & i \in \left\lbrace 1, 2 \right\rbrace. &
+  \label{eq:9UTG8}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Mieszając sygnały $u_1(t)$ i $u_2(t)$ z~sygnałami wzorcowymi można zmierzyć
+$P_i$, $Q_i$, $i \in \left\lbrace 1, 2 \right\rbrace$. Mnożąc
+mianowicie~\eqref{eq:MG9JQ} przez $\sin{\omega t}$ bądź $\cos{\omega t}$
+otrzymujemy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subequations}
+  \begin{align}
+    &  U_i \sin{(\omega t + \varphi_i)}\sin{\omega t}
+      = U_i \left(
+        \frac{1}{2}\cos{\varphi_i} - \frac{1}{2}\cos{(2 \omega t + \varphi_i)}
+      \right)
+      = \frac{1}{2} P_i -
+        \frac{1}{2} U_i \cos{(2 \omega t + \varphi_i)},
+    &
+    \label{eq:S0V86}
+    \\
+    & U_i \sin{(\omega t + \varphi_i)}\cos{\omega t}
+      = U_i \left(
+        \frac{1}{2}\sin{\varphi_i} + \frac{1}{2}\sin{(2 \omega t + \varphi_i)}
+      \right)
+      = \frac{1}{2} Q_i +
+        \frac{1}{2} U_i \sin{(2 \omega t + \varphi_i)},
+    &
+    \label{eq:IU4JA}
+  \end{align}
+  \label{eq:M1ICA}
+\end{subequations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dla $i \in \left\lbrace 1, 2 \right\rbrace$. Wartości $P_i$, $Q_i$ można
+uzyskać mierząc składową stałą sygnałów wyjściowych z~mieszacza (stosując
+np. odpowiedni filtr dolnoprzepustowy).
+
+Z~naszego punktu widzenia interesująca jest transmitancja badanego układu,
+która w~przypadku układu liniowego objawia się poprzez zmianę amplitudy
+(wzmocnienie $A_D$) i~przesunięcia fazowego $\varphi_D$ sygnału wyjściowego
+$u_2$ w~stosunku do wejściowego $u_1$. Możemy to wyrazić jako
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{multline}
+  u_2(t) = A_D U_1 \sin{((\omega t + \varphi_1) + \varphi_D)} = A_D U_1 \left[
+    \cos{\varphi_D} \sin{(\omega t + \varphi_1)
+  + \sin{\varphi_D} \cos{(\omega t + \varphi_1)}}
+  \right] = \\ = U_1 \left[
+    P_D \sin{(\omega t + \varphi_1) + Q_D \cos{(\omega t + \varphi_1)}}
+  \right] = \\ = U_1 \left[
+    P_D \left(
+      \sin{\omega t} \cos{\varphi_1}
+    + \cos{\omega t} \sin{\varphi_1}
+    \right) + Q_D \left(
+      \cos{\omega t} \cos{\varphi_1}
+    - \sin{\omega t} \sin{\varphi_1}
+    \right)
+  \right] = \\ = U_1 \left[
+    \left(P_D \cos{\varphi_1} - Q_D \sin{\varphi_1}\right)\sin{\omega t}
+  + \left(P_D \sin{\varphi_1} + Q_D \cos{\varphi_1}\right)\cos{\omega t}
+  \right] = \\ =
+    \left(P_1 P_D - Q_1 Q_D\right) \sin{\omega t}
+  + \left(Q_1 P_D + P_1 Q_D\right) \cos{\omega t}
+  \label{eq:HV0TF}
+\end{multline}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gdzie $P_D$ oraz $Q_D$ reprezentują transmitancję $G_D = P_D + j Q_D$ badanego
+układu.
+
+Przez porównanie \eqref{eq:MG9JQ} z~\eqref{eq:HV0TF} otrzymujemy układ równań
+liniowych względem $P_D$ i $Q_D$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subequations}
+  \begin{align}
+    & P_1 P_D - Q_1 Q_D = P_2, &
+    \label{eq:CKOLT}
+    \\
+    & Q_1 P_D + P_1 Q_D = Q_2, &
+    \label{eq:5FLMS}
+  \end{align}
+  \label{eq:85PRD}
+\end{subequations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+z~którego rozwiązania dostajemy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subequations}
+  \begin{align}
+    & P_D = \frac{P_1 P_2 + Q_1 Q_2}{P_1^2 + Q_1^2}, &
+    \label{eq:DJRBO}
+    \\
+    & Q_D = \frac{P_1 Q_2 - Q_1 P_2}{P_1^2 + Q_1^2}. &
+    \label{eq:AR3L3}
+  \end{align}
+  \label{eq:B7J8O}
+\end{subequations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Formułę \eqref{eq:B7J8O} możemy wyrazić w~nieco innej postaci
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subequations}
+  \begin{align}
+    & P_D = \frac{P_1}{U_1} \frac{P_2}{U_1}
+          + \frac{Q_1}{U_1} \frac{Q_2}{U_1}, &
+    \label{eq:NXSH5}
+    \\
+    & Q_D = \frac{P_1}{U_1} \frac{Q_2}{U_1}
+          - \frac{Q_1}{U_1} \frac{P_2}{U_1}, &
+    \label{eq:6L48H}
+  \end{align}
+  \label{eq:F3CUU}
+\end{subequations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gdzie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  U_1 = \sqrt{P_1^2 + Q_1^2}.
+  \label{eq:W79B6}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Zauważmy, że sygnały przeskalowane $\frac{P_i}{U_1}$ oraz  $\frac{Q_i}{U_1}$
+będą miały ograniczone amplitudy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subequations}
+  \begin{align}
+    & \left|\frac{P_1}{U_1}\right| \le 1 &
+    & \left|\frac{Q_1}{U_1}\right| \le 1, &
+    \label{eq:4AA9D}
+    \\
+    & \left|\frac{P_2}{U_1}\right| \le A_D &
+    & \left|\frac{Q_2}{U_1}\right| \le A_D, &
+    \label{eq:TX2NW}
+  \end{align}
+\end{subequations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gdzie $A_D \le 1$ dla układów pasywnych.
+
+%%Przez porównanie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\begin{multline}
+%%
+%%  \label{eq:CCBE4}
+%%\end{multline}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%\begin{figure}[htbp]
@@ -589,7 +754,7 @@ $\frac{1}{2}\sin\varphi$ niosącymi pełną informację o~przesunięciu fazowym
 %%\end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Tak wyznaczone współczynniki mogą być użyte do przeliczania wartości
-%%napięciowych z~akcelerometru na~przyspieszenia $\hat{\brm{a}}^{\prime}$ 
+%%napięciowych z~akcelerometru na~przyspieszenia $\hat{\brm{a}}^{\prime}$
 %%wg wzoru \eqref{eq:HM7PF}.
 %%
 %%\section{Pomiar}
@@ -1415,28 +1580,5 @@ $\frac{1}{2}\sin\varphi$ niosącymi pełną informację o~przesunięciu fazowym
 %%\label{??:6DR1S}
 %%\label{??:I1HGZ}
 %%\label{??:NZPSA}
-%%\label{??:S0V86}
-%%\label{??:M1ICA}
-%%\label{??:IU4JA}
-%%\label{??:HXTEF}
-%%\label{??:2GJPI}
-%%\label{??:4AA9D}
-%%\label{??:TX2NW}
-%%\label{??:W79B6}
-%%\label{??:NXSH5}
-%%\label{??:6L48H}
-%%\label{??:F3CUU}
-%%\label{??:DJRBO}
-%%\label{??:AR3L3}
-%%\label{??:B7J8O}
-%%\label{??:CKOLT}
-%%\label{??:5FLMS}
-%%\label{??:85PRD}
-%%\label{??:HV0TF}
-%%\label{??:CCBE4}
-%%\label{??:9EP87}
-%%\label{??:IBD7P}
-%%\label{??:9UTG8}
-%%\label{??:MG9JQ}
 
 % vim: set syntax=tex tabstop=2 shiftwidth=2 expandtab spell spelllang=pl:

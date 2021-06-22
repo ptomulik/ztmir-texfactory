@@ -53,6 +53,8 @@
 \NewDocumentCommand{\setargsaux}{mm}
 {\IfNoValueTF{#2}{#1} {#1\,\delimsize|\,\mathopen{}#2}}%{#1\:;\:#2}
 
+\DeclarePairedDelimiterX{\abs}[1]{|}{|}{\setargs{#1}}
+
 \setcitestyle{numbers,square,comma}
 
 \begin{document}
@@ -73,28 +75,22 @@
   w~trakcie samo-edukacji.
 \end{abstract}
 
-\section{Wprowadzenie}
-\label{sec:G1J9K}
-
-\section{Układ pomiarowy}
-\label{sec:NMQFB}
-
 \section{Koncepcja pomiaru}
 \label{sec:6C4QN}
 
-Koncepcja pomiaru jest w zasadzie znana od prawie 100 lat. Urządzenia z
-kategorii ,,transfer function analyzer'', czy wzmacniacze typu ,,lock-in
-amplifier'' działają wg podobnej zasady. U podstaw działania tych urządzeń leży
-proces mieszania sygnału badanego $u(t)$ z~pewnym sygnałem wzorcowym. W~tym
-celu stosuje się nieliniowe elementy elektroniczne, bądź układy scalone
-przeznaczone do przemiany częstotliwości. Jedną z~metod mieszania
-częstotliwości jest mnożenie sygnałów. Szczególnie interesujące dla potrzeb
-niniejszego projektu jest przetwarzanie sygnałów sinusoidalnych.
+Koncepcja pomiaru jest znana od prawie 100 lat. Urządzenia z~kategorii
+,,transfer function analyzer'', znane również jako woltomierze fazoczułe
+działają wg podobnej zasady. U podstaw działania tych urządzeń leży proces
+mieszania sygnału badanego $u(t)$ z~pewnym sygnałem wzorcowym. W~tym celu
+stosuje się nieliniowe elementy elektroniczne, bądź układy scalone przeznaczone
+do przemiany częstotliwości. Jedną z~metod przemiany częstotliwości jest
+mnożenie sygnałów. Szczególnie interesujące dla potrzeb niniejszego projektu
+jest przetwarzanie sygnałów sinusoidalnych.
 
 \subsection{Iloczyn funkcji sinusoidalnych}
 \label{sec:NZPSA}
 
-Pamiętamy, że funkcje trygonometryczne można wyrazić w~postaci wykładniczej
+Funkcje trygonometryczne można wyrazić w~postaci wykładniczej, np.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{align}
   & \cos x = \frac{1}{2} \left( e^{jx} + e^{-jx}\right), &
@@ -180,7 +176,7 @@ Z~równań \eqref{eq:9LJZO} widzimy, że w~wyniku mnożenia sygnałów
 o~pulsacjach $\Omega$ i $\omega$ powstaje sygnał złożony z~dwu harmonicznych:
 jednej o~pulsacji $\Omega - \omega$, drugiej o pulsacji $\Omega + \omega$.
 
-W~szczególnym przypadku, gdy $\Omega = \omega$
+W~szczególnym przypadku, gdy $\Omega = \omega$, otrzymujemy sygnały
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \label{eq:EE55O}
@@ -201,14 +197,14 @@ W~szczególnym przypadku, gdy $\Omega = \omega$
   \end{align}
 \end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-otrzymujemy sygnały, których składowe stałe $\frac{1}{2}\cos\varphi$,
-$\frac{1}{2}\sin\varphi$ odzwierciedlają przesunięcie fazowe $\varphi$.
+których składowe stałe $\frac{1}{2}\cos\varphi$, $\frac{1}{2}\sin\varphi$
+odzwierciedlają przesunięcie fazowe $\varphi$.
 
-\subsection{Sygnały użyte w~pomiarze transmitancji $G_D$}
+\subsection{Sygnały użyte w~pomiarze transmitancji $G$}
 \label{sec:I1HGZ}
 
 W~niniejszym projekcie zakłada się, że do układu badanego doprowadzony jest
-zmienny sygnał napięciowy $u_1(t)$ o~amplitudzie $U_1$, pulsacji $\omega$
+sinusoidalny sygnał napięciowy $u_1(t)$ o~amplitudzie $U_1$, pulsacji $\omega$
 i~przesunięty w~fazie względem sygnału wzorcowego $u_I(t) = \sin{\omega t}$
 o~kąt $\varphi_1$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,10 +224,10 @@ o~kąt $\varphi_1$.
       >=latex'%
     ]
     \node [input] (IN) {};
-    \node [block, right of=IN, node distance=2cm] (GD) {$G_D$};
-    \node [output, right of=GD, node distance=2cm] (OUT) {};
-    \draw [->] (IN) -- node[anchor=south]{$u_1(t)$} (GD);
-    \draw [->] (GD) -- node[anchor=south]{$u_2(t)$} (OUT);
+    \node [block, right of=IN, node distance=2cm] (G) {$G$};
+    \node [output, right of=G, node distance=2cm] (OUT) {};
+    \draw [->] (IN) -- node[anchor=south]{$u_1(t)$} (G);
+    \draw [->] (G) -- node[anchor=south]{$u_2(t)$} (OUT);
   \end{tikzpicture}
   \caption{Układ badany oraz sygnały}
   \label{fig:6DR1S}
@@ -262,14 +258,14 @@ gdzie
 \end{align}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Metoda pozyskania składowych transmitancji $G_D$}
+\subsection{Metoda pozyskania składowych transmitancji $G$}
 \label{sec:TV9TW}
 
 Mieszając sygnały $u_i(t)$, $i \in \set{1, 2}$ z~sygnałami wzorcowymi $u_I(t) =
 \sin{\omega t}$, $u_Q(t) = \cos{\omega t}$ można zmierzyć $P_i = U_i
 \cos{\varphi_i}$, $Q_i = U_i \sin {\varphi_i}$, $i \in \set{1, 2}$. Mnożąc
-mianowicie~\eqref{eq:MG9JQ} przez $\sin{\omega t}$ bądź $\cos{\omega t}$
-otrzymujemy, zgodnie z~\eqref{eq:EE55O},
+mianowicie~\eqref{eq:MG9JQ} odpowiednio przez $\sin{\omega t}$ bądź
+$\cos{\omega t}$ otrzymujemy, zgodnie z~\eqref{eq:EE55O},
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
@@ -331,10 +327,11 @@ np. odpowiedni filtr dolnoprzepustowy).
         minimum width=3em,%
         path picture={%
           \draw [black]%
-          ($(path picture bounding box.west) + (1mm,0mm)$)%
+          ($(path picture bounding box.west) + ( 2mm,0mm)$)%
           --%
-          ($(path picture bounding box.east) + (-1mm,0mm)$)%
-          ($(path picture bounding box.west) + (2mm,3mm)$)%
+          ($(path picture bounding box.east) + (-1mm,0mm)$);%
+          \draw [black]%
+          ($(path picture bounding box.west) + ( 2mm,3mm)$)%
           --%
           ($(path picture bounding box.center) + (0mm,3mm)$)%
           --%
@@ -344,11 +341,11 @@ np. odpowiedni filtr dolnoprzepustowy).
       coord/.style = {coordinate},
       >=latex'%
     ]
-    \node [block] (GD) {$G_D$};
-    \node [input, below of=GD, node distance=2.5cm] (IN) {};
-    \node [output, above of=GD, node distance=2.5cm] (OUT) {};
-    \node [junction, below of=GD, node distance=2cm] (JI0) {};
-    \node [junction, above of=GD, node distance=2cm] (JO0) {};
+    \node [block] (G) {$G$};
+    \node [input, below of=G, node distance=2.5cm] (IN) {};
+    \node [output, above of=G, node distance=2.5cm] (OUT) {};
+    \node [junction, below of=G, node distance=2cm] (JI0) {};
+    \node [junction, above of=G, node distance=2cm] (JO0) {};
     \node [junction, right of=JI0, node distance=2cm] (JI1) {};
     \node [junction, right of=JO0, node distance=2cm] (JO1) {};
     \node [coord, below of=JI1, node distance=0.75cm] (CI1I) {};
@@ -371,16 +368,16 @@ np. odpowiedni filtr dolnoprzepustowy).
     \node [coord, right of=FIQ, node distance=2cm] (CIQ) {};
     \node [coord, right of=FOI, node distance=2cm] (COI) {};
     \node [coord, right of=FOQ, node distance=2cm] (COQ) {};
-    \draw [->] (IN) -- node[anchor=east]{$u_1(t)$} (GD);
-    \draw [->] (GD) -- node[anchor=east]{$u_2(t)$} (OUT);
+    \draw [->] (IN) -- node[anchor=east]{$u_1(t)$} (G);
+    \draw [->] (G) -- node[anchor=east]{$u_2(t)$} (OUT);
     \draw [->] (JI0) -- (JI1) -| (CI1I) -- (MII);
     \draw [->] (JI0) -- (JI1) -| (CI1Q) -- (MIQ);
     \draw [->] (JO0) -- (JO1) -| (CO1I) -- (MOI);
     \draw [->] (JO0) -- (JO1) -| (CO1Q) -- (MOQ);
-    \draw [->] (UII) -- node [anchor=west]{$u_I(t)$} (MII);
-    \draw [->] (UOI) -- node [anchor=west]{$u_I(t)$} (MOI);
-    \draw [->] (UIQ) -- node [anchor=west]{$u_Q(t)$} (MIQ);
-    \draw [->] (UOQ) -- node [anchor=west]{$u_Q(t)$} (MOQ);
+    \draw [->] (UII) -- node [anchor=west]{$\sin{\omega t}$} (MII);
+    \draw [->] (UOI) -- node [anchor=west]{$\sin{\omega t}$} (MOI);
+    \draw [->] (UIQ) -- node [anchor=west]{$\cos{\omega t}$} (MIQ);
+    \draw [->] (UOQ) -- node [anchor=west]{$\cos{\omega t}$} (MOQ);
     \draw [->] (MII) -- (FII);
     \draw [->] (MIQ) -- (FIQ);
     \draw [->] (MOI) -- (FOI);
@@ -395,46 +392,66 @@ np. odpowiedni filtr dolnoprzepustowy).
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Interesująca nas transmitancja $G_D$ badanego układu (liniowego) objawia się
-poprzez zmianę amplitudy (wzmocnienie $A_D$) i~przesunięcie fazowe
-(o~$\varphi_D$) sygnału wyjściowego $u_2$ w~stosunku do wejściowego $u_1$.
-Możemy to wyrazić jako
+Interesująca nas transmitancja $G$ badanego układu objawia się poprzez zmianę
+amplitudy i~przesunięcia fazowego sygnału wyjściowego $u_2$ w~stosunku do
+wejściowego $u_1$. Wprowadźmy oznaczenia
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}
+  \item $A(\omega) = \abs{G(j\omega)}$ -- wzmocnienie/tłumienie badanego układu,
+  \item $\varphi(\omega)$ -- przesunięcie fazowe wprowadzane przez badany układ.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Wtedy $u_2(t)$ możemy wyrazić jako
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{multline}
-  u_2(t) = A_D U_1 \sin{((\omega t + \varphi_1) + \varphi_D)} = A_D U_1 \left[
-    \cos{\varphi_D} \sin{(\omega t + \varphi_1)
-  + \sin{\varphi_D} \cos{(\omega t + \varphi_1)}}
+  u_2(t) = A U_1 \sin{((\omega t + \varphi_1) + \varphi)} = A U_1 \left[
+    \cos{\varphi} \sin{(\omega t + \varphi_1)
+  + \sin{\varphi} \cos{(\omega t + \varphi_1)}}
   \right] = \\ = U_1 \left[
-    P_D \sin{(\omega t + \varphi_1) + Q_D \cos{(\omega t + \varphi_1)}}
+    P \sin{(\omega t + \varphi_1) + Q \cos{(\omega t + \varphi_1)}}
   \right] = \\ = U_1 \left[
-    P_D \left(
+    P \left(
       \sin{\omega t} \cos{\varphi_1}
     + \cos{\omega t} \sin{\varphi_1}
-    \right) + Q_D \left(
+    \right) + Q \left(
       \cos{\omega t} \cos{\varphi_1}
     - \sin{\omega t} \sin{\varphi_1}
     \right)
   \right] = \\ = U_1 \left[
-    \left(P_D \cos{\varphi_1} - Q_D \sin{\varphi_1}\right)\sin{\omega t}
-  + \left(P_D \sin{\varphi_1} + Q_D \cos{\varphi_1}\right)\cos{\omega t}
+    \left(P \cos{\varphi_1} - Q \sin{\varphi_1}\right)\sin{\omega t}
+  + \left(P \sin{\varphi_1} + Q \cos{\varphi_1}\right)\cos{\omega t}
   \right] = \\ =
-    \left(P_1 P_D - Q_1 Q_D\right) \sin{\omega t}
-  + \left(Q_1 P_D + P_1 Q_D\right) \cos{\omega t},
+    \left(P_1 P - Q_1 Q\right) \sin{\omega t}
+  + \left(Q_1 P + P_1 Q\right) \cos{\omega t},
   \label{eq:HV0TF}
 \end{multline}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-gdzie $P_D$ oraz $Q_D$ reprezentują transmitancję $G_D = P_D + j Q_D$ badanego
-układu.
+gdzie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  & P = A \cos{\varphi} &
+  & Q = A \sin{\varphi} &
+  \label{eq:LKWY0}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+są składowymi (część rzeczywista i~urojona) transmitancji widmowej
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  G(j\omega) = P(\omega) + j Q(\omega)
+  \label{eq:1RMRC}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+badanego układu.
 
 Przez porównanie \eqref{eq:MG9JQ} z~\eqref{eq:HV0TF} otrzymujemy układ równań
-liniowych z~niewiadomymi $P_D$ i $Q_D$
+liniowych z~niewiadomymi $P$ i $Q$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
-    & P_1 P_D - Q_1 Q_D = P_2, &
+    & P_1 P - Q_1 Q = P_2, &
     \label{eq:CKOLT}
     \\
-    & Q_1 P_D + P_1 Q_D = Q_2, &
+    & Q_1 P + P_1 Q = Q_2, &
     \label{eq:5FLMS}
   \end{align}
   \label{eq:85PRD}
@@ -444,10 +461,10 @@ z~którego rozwiązania dostajemy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
-    & P_D = \frac{P_1 P_2 + Q_1 Q_2}{P_1^2 + Q_1^2}, &
+    & P = \frac{P_1 P_2 + Q_1 Q_2}{P_1^2 + Q_1^2}, &
     \label{eq:DJRBO}
     \\
-    & Q_D = \frac{P_1 Q_2 - Q_1 P_2}{P_1^2 + Q_1^2}. &
+    & Q = \frac{P_1 Q_2 - Q_1 P_2}{P_1^2 + Q_1^2}. &
     \label{eq:AR3L3}
   \end{align}
   \label{eq:B7J8O}
@@ -458,11 +475,11 @@ Formułę \eqref{eq:B7J8O} możemy wyrazić w~nieco innej postaci
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{subequations}
   \begin{align}
-    & P_D = \frac{P_1}{U_1} \frac{P_2}{U_1}
+    & P = \frac{P_1}{U_1} \frac{P_2}{U_1}
           + \frac{Q_1}{U_1} \frac{Q_2}{U_1}, &
     \label{eq:NXSH5}
     \\
-    & Q_D = \frac{P_1}{U_1} \frac{Q_2}{U_1}
+    & Q = \frac{P_1}{U_1} \frac{Q_2}{U_1}
           - \frac{Q_1}{U_1} \frac{P_2}{U_1}, &
     \label{eq:6L48H}
   \end{align}
@@ -486,12 +503,15 @@ będą miały ograniczone amplitudy
     & \left|\frac{Q_1}{U_1}\right| \le 1, &
     \label{eq:4AA9D}
     \\
-    & \left|\frac{P_2}{U_1}\right| \le A_D &
-    & \left|\frac{Q_2}{U_1}\right| \le A_D. &
+    & \left|\frac{P_2}{U_1}\right| \le A &
+    & \left|\frac{Q_2}{U_1}\right| \le A. &
     \label{eq:TX2NW}
   \end{align}
 \end{subequations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Koncepcja układu pomiarowego}
+\label{sec:NMQFB}
 
 
 %%\begin{appendices}
@@ -1079,7 +1099,5 @@ będą miały ograniczone amplitudy
 %%\label{??:8FMI2}
 %%\label{??:DQ4IE}
 %%\label{??:6SYZY}
-%%\label{??:1RMRC}
-%%\label{??:LKWY0}
 
 % vim: set syntax=tex tabstop=2 shiftwidth=2 expandtab spell spelllang=pl:

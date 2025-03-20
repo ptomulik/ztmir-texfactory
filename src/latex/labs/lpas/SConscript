@@ -82,6 +82,14 @@ labs = {
         #    'deps'    : [],
     },
 
+    'lpas10': {
+        'version' : '1.0.0',
+        'svgs'    : [],
+        'gplots'  : [[ 'lpas10/trapezoid.gp',       {'gp_extoutputs': 'lpas10/trapezoid.eps'}],
+                     [ 'lpas10/measurements.gp',    {'gp_extoutputs': 'lpas10/measurements.eps', 'gp_inputs': ['lpas10/measurements.csv']}]],
+        #   'deps'  : []
+    },
+
     'transfun' : {
         'version' : '1.0.1',
         'svgs'    : [],

@@ -1,0 +1,323 @@
+\documentclass[paper=a4,DIV=12]{lpas}
+
+\usepackage[polish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[scaled=.9,otfmath]{XCharter}
+\usepackage[scaled=.9,varqu,varl,mono,hyphenate]{inconsolata}
+\usepackage[uprightscript,xcharter,vvarbb,scaled=.9]{newtxmath}
+%\usepackage[scaled=.9,type1]{sourcesanspro}
+\usepackage{mathrsfs}
+\usepackage[]{hyperref}
+\usepackage{natbib}
+
+%%\everymath{\displaystyle}
+
+\usepackage{bm}
+\usepackage{amsmath,amsfonts}
+%%\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage[titletoc,title]{appendix}
+%%\usepackage{subcaption}
+%\usepackage{listings}
+\usepackage{float}
+%%\usepackage{tabularx}
+\usepackage{tikz}
+%%\usepackage{circuitikz}
+%%\usetikzlibrary{arrows.meta,3d,patterns,calc,shapes.geometric}
+
+\newcommand{\brm}[1]{\bm{\mathrm{#1}}}
+\renewcommand{\arraystretch}{1.2}
+%%\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+%%\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+%%\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% commath provides \od, but the package is not available on my travis-ci setup
+\newcommand*{\od}[2]{\frac{\mathrm{d}#1}{\mathrm{d}#2}}
+\newcommand*{\odn}[3]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
+\newcommand*{\tod}[2]{\tfrac{\mathrm{d}#1}{\mathrm{d}#2}}
+\newcommand*{\todn}[3]{\tfrac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}
+% gensymb provides \degree command, but whole package for just one symbol?
+%%\newcommand{\degree}{^{\circ}}
+
+\setcitestyle{numbers,square,comma}
+
+\begin{document}
+
+
+\subject{Laboratorium pomiarów, automatyki i~sterowania~I}
+\supertitle{Ćwiczenie 10}
+\title{Wyznaczanie charakterystyki amplitudowo-fazowej na podstawie odpowiedzi skokowej}
+
+\author{Zakład Teorii Maszyn i Robotów\\ ITLiMS, MEIL, PW}
+
+\date{}
+\maketitle
+
+\pagebreak
+\tableofcontents
+\pagebreak
+
+%%\begin{abstract}
+%%\noindent
+%%\end{abstract}
+
+\section{Wstęp}
+\label{sec:LBU9I}
+
+Właściwości dynamiczne liniowych układów o stałych skupionych można określić
+m.in. na podstawie odpowiednich charakterystyk zarówno w dziedzinie czasu, jak
+też dziedzinie częstotliwości. W pierwszym przypadku często wykorzystuje się
+charakterystyki impulsową i skokową natomiast w drugim, charakterystyki
+częstotliwościowe (np. wykresy Nyquista lub Bodego). Znajomość transmitancji
+operatorowej układu, a co za tym idzie -- transmitancji widmowej, pozwala na
+wyznaczenie obu typów charakterystyk. W związku z tym zachodzą również
+możliwości:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}
+  \item wyznaczania transmitancji widmowej układu na podstawie charakterystyki
+    skokowej,
+  \item wyznaczania charakterystyki skokowej na podstawie transmitancji
+    widmowej układu.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{Cel ćwiczenia}
+\label{sec:ZWO2V}
+
+Celem ćwiczenia jest zapoznanie studentów z~metodą wyznaczania transmitancji
+widmowej układu na podstawie zdjętej doświadczalnie charakterystyki skokowej.
+
+\section{Podstawy teoretyczne}
+\label{sec:K5NDO}
+
+Niech $h(t)$ będzie odpowiedzią układu na skok jednostkowy $\bm{1}(t)$.
+Istnieje bezpośredni związek między transmitancją operatorową $G(s)$ układu
+a~transformatą $H(s) = \mathscr{L}\{h(t)\}$ odpowiedzi skokowej $h(t)$\footnote{%
+  Wynika to z~faktu, że $\mathscr{L}\{\bm{1}(t)\} = 1/s$ oraz
+  $H(s) = G(s)\cdot\mathscr{L}\{\bm{1}(t)\}$.%
+}:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  G(s) = s H(s).
+  \label{eq:SQUJF}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Prawa strona równania \eqref{eq:SQUJF} to nic innego jak transformata
+$\mathscr{L}$ pierwszej pochodnej funkcji $h(t)$:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \begin{aligned}
+    & s H(s) = \mathscr{L}\left\{\od{h(t)}{t}\right\}, && h(0) = 0. &
+  \end{aligned}
+  \label{eq:MFHCT}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Korzystając z~definicji transformaty Laplace'a, równanie \eqref{eq:SQUJF} można
+zatem zapisać jako:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  G(s) = \int_0^{\infty}{\od{h(t)}{t} \cdot e^{-s t} dt}.
+  \label{eq:L018O}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Stąd wprost wynika formuła na transmitancję widmową $G(j\omega) = G(s)|_{s=j\omega}$:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  G(j\omega) = \int_0^{\infty}{\od{h(t)}{t} \cdot e^{-j\omega t} dt}.
+  \label{eq:DYXKC}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Podział całki
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \int_0^{\infty} \od{h(t)}{t} \cdot e^{-j\omega t} dt
+    = \int_{t_0}^{t_n} \od{h(t)}{t} \cdot e^{-j\omega t} dt
+    + \int_{t_n}^{\infty} \od{h(t)}{t} \cdot e^{-j\omega t} dt
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Całkowanie przez części
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \int_{t_0}^{t_n} \od{h(t)}{t} \cdot e^{-j\omega t} dt
+    = \left[h(t) \cdot e^{-j\omega t}\right]_{t_0}^{t_n}
+    + j\omega \int_{t_0}^{t_n} h(t) \cdot e^{-j\omega t} dt
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Kwadratura (trapezy), przy założeniu $\Delta t = t_k - t_{k-1}$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+    \int_{t_0}^{t_n} h(t) \cdot e^{-j\omega t} dt
+      \approx \Delta t \left(
+          \frac{h_0 e^{-j\omega t_0} + h_n e^{-j\omega t_n}}{2}
+        + \sum_{k=1}^{n-1} {h_k e^{-j\omega t_k}}
+      \right)
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Wracamy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \int_0^{\infty} \od{h(t)}{t} \cdot e^{-j\omega t} dt
+    \approx h_n e^{-j\omega t_n} - h_0 e^{-j\omega t_0}
+    + j\omega \Delta t \left(
+          \frac{h_0 e^{-j\omega t_0} + h_n e^{-j\omega t_n}}{2}
+        + \sum_{k=1}^{n-1} {h_k e^{-j\omega t_k}}
+      \right)
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Po uporządkowaniu wyrazów, otrzymujemy składowe transmitancji
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \begin{aligned}
+    P(\omega) & \approx h_n \cos{\omega t_n} - h_0 \cos{\omega t_0}
+      + \omega \Delta t \left(
+        \frac{h_0 \sin{\omega t_0} + h_n \sin{\omega t_n}}{2}
+        + \sum_{k=1}^{n-1}{h_k \sin{\omega t_k}}
+      \right),
+    \\
+    Q(\omega) & \approx h_0 \sin{\omega t_0} - h_n \sin{\omega t_n}
+      + \omega \Delta t \left(
+        \frac{h_0 \cos{\omega t_0} + h_n \cos{\omega t_n}}{2}
+        + \sum_{k=1}^{n-1}{h_k \cos{\omega t_k}}
+      \right).
+  \end{aligned}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Jeśli charakterystyka $h(t)$ nie jest podana w~postaci analitycznej, lecz
+graficznej (np. została zdjęta doświadczalnie), wtedy transmitancję widmową
+układu można wyznaczyć w~sposób uproszczony. W~tym celu dokonuje się
+aproksymacji uzyskanej krzywej za~pomocą linii łamanej
+(rysunek~\ref{fig:Z319K}).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!ht]
+  \centering
+  \input{lpas10/approx.tex}
+  \caption{Zasada aproksymacji charakterystyki skokowej $h(t)$}
+  \label{fig:Z319K}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Przybliżoną wartość pochodnej funkcji $h(t)$ dla każdego przedziału
+aproksymacji określa iloraz różnicowy wprzód:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \begin{aligned}
+    & B_k = \frac{h_k - h_{k-1}}{t_k - t_{k-1}}, && \text{dla } k=1,2,\dots,n, &
+  \end{aligned}
+  \label{eq:DPN3S}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gdzie wielkości $h_k$ i~$t_k$ oznaczają współrzędne $k$-tego punktu, natomiast
+$n$ jest liczbą odcinków linii łamanej.
+
+Zależność \eqref{eq:DPN3S} ma również zastosowanie w przypadku ćwiczenia, gdy
+charakterystykę skokową rejestruje się przy użyciu przetwornika
+analogowo-cyfrowego (A/C). Wielkości $h_k$ i~$t_k$ oznaczają wtedy współrzędne
+$k$-tego punktu pomiarowego a interwały $(t_k-t_{k-1})$ są równe okresowi
+próbkowania przetwornika $\Delta t$.
+
+Po~uwzględnieniu \eqref{eq:DPN3S} wyrażenie na transmitancję widmową przyjmie
+postać:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  G(j\omega) = \sum_{k=1}^n{B_k \int_{t_{k-1}}^{t_k}{e^{-j\omega t} dt}}
+             = \sum_{k=1}^n{\frac{j B_k}{\omega}\left(
+                  e^{-j\omega t_k} - e^{-j\omega t_{k-1}}
+                \right)}
+  \label{eq:6JRJH}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Po przekształceniach szukaną transmitancję widmową można zapisać w dogodnej
+formie do wykreślenia charakterystyki amplitudowo-fazowej (A-F):
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{equation}
+  \begin{aligned}
+    P(\omega) & = \frac{1}{\omega} \sum_{k=1}^n{B_k \left(
+      \sin{\omega t_k} - \sin{\omega t_{k-1}}
+    \right)}
+    \\
+    Q(\omega) & = \frac{1}{\omega} \sum_{k=1}^n{B_k \left(
+      \cos{\omega t_k} - \cos{\omega t_{k-1}}
+    \right)}
+  \end{aligned}
+  \label{eq:Y7Q4P}
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Przebieg ćwiczenia}
+\label{sec:2USO1}
+
+To ćwiczenie laboratoryjne stanowi uzupełnienie i kontynuację ćwiczenia
+,,Badanie charakterystyk częstotliwościowych i przebiegów nieustalonych
+podstawowych członów automatyki''. Zakłada się, że studenci wykonali wcześniej
+ćwiczenie i znają sposób pomiaru charakterystyk A-F czwórników RLC przy użyciu
+analizatora transmitancji.
+
+\section{Opracowanie wyników pomiarów}
+\label{sec:II99S}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[H]
+  \centering
+  \input{lpas10/measurements.tex}
+  \caption{Przykładowe dane pomiarowe dla członu oscylacyjnego}
+  \label{fig:RKDNU}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Przygotowanie sprawozdania}
+\label{sec:ZEUBF}
+
+
+%%\clearpage
+%%
+%%\begin{appendices}
+%%  \section{Lorem impsum}
+%%  \label{sec:CKMXB}
+%%
+%%\end{appendices}
+
+%% \bibliographystyle{unsrtnat}
+%% \bibliography{lpas}
+
+\end{document}
+
+%\label{?:CJQM7}
+%\label{?:HU8MI}
+%\label{?:AW332}
+%\label{?:5VQVG}
+%\label{?:PO024}
+%\label{?:YGQLA}
+%\label{?:XZDX0}
+%\label{?:AHW5W}
+%\label{?:N5LK3}
+%\label{?:R3TWE}
+%\label{?:W4ZCA}
+%\label{?:Q5MHE}
+%\label{?:MY8NE}
+%\label{?:L1YIJ}
+%\label{?:6KNTM}
+%\label{?:8EEDH}
+%\label{?:X16R0}
+%\label{?:0BEFA}
+%\label{?:R2WL9}
+%\label{?:AP8CL}
+%\label{?:J7GYY}
+%\label{?:HNVFS}
+%\label{?:EV7P7}
+%\label{?:FBOCS}
+%\label{?:GOSPX}
+%\label{?:9JPQW}
+%\label{?:D9TVH}
+%\label{?:MZ4XJ}
+%\label{?:GGFI8}
+%\label{?:DITCB}
+
+% vim: set syntax=tex tabstop=2 shiftwidth=2 expandtab spell spelllang=pl:
